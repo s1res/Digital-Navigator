@@ -1,0 +1,380 @@
+<%- include('../partials/header', { title: 'Редактирование профиля', page: 'profile-edit' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Редактирование профиля</h1>
+        <p>Измените информацию о себе</p>
+      </div>
+    </section>
+
+    <section class="profile-section">
+      <div class="container">
+        <div class="profile-container">
+          <div class="profile-card">
+            <% if (typeof error !== 'undefined' && error) { %>
+              <div class="error-message">
+                <%= error %>
+              </div>
+            <% } %>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+              <div class="success-message">
+                <%= success %>
+              </div>
+            <% } %>
+
+            <form action="/profile/edit" method="POST" enctype="multipart/form-data" class="profile-edit-form" id="profileEditForm">
+              <div class="form-group">
+                <label>Текущая фотография</label>
+                <div class="profile-avatar-preview">
+                  <% if (typeof user !== 'undefined' && user && user.avatar_path) { %>
+                    <img src="<%= user.avatar_path %>" alt="Avatar" class="profile-avatar-image">
+                  <% } else { %>
+                    <div class="profile-avatar-placeholder">
+                      <%= typeof user !== 'undefined' && user ? user.username.charAt(0).toUpperCase() : 'U' %>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="avatar">Фотография профиля</label>
+                <input type="file" id="avatar" name="avatar" accept="image/*">
+                <small>Допустимые форматы: JPG, PNG, GIF, WEBP. Максимум 2MB.</small>
+                <div id="avatarPreview" class="avatar-preview-container" style="display: none;">
+                  <p class="preview-label">Предпросмотр новой фотографии (перетащите изображение для позиционирования):</p>
+                  <div class="avatar-preview-wrapper" id="previewWrapper">
+                    <div class="avatar-preview-inner" id="previewInner">
+                      <img id="avatarPreviewImage" src="" alt="Предпросмотр" class="avatar-preview-image">
+                    </div>
+                    <button type="button" class="avatar-preview-remove" id="removePreview" aria-label="Убрать предпросмотр">×</button>
+                    <div class="preview-controls">
+                      <button type="button" class="preview-control-btn" id="zoomIn" aria-label="Увеличить">+</button>
+                      <button type="button" class="preview-control-btn" id="zoomOut" aria-label="Уменьшить">−</button>
+                      <button type="button" class="preview-control-btn" id="resetPosition" aria-label="Сбросить позицию">↺</button>
+                    </div>
+                  </div>
+                  <input type="hidden" id="imageData" name="imageData">
+                  <input type="hidden" id="imageX" name="imageX" value="0">
+                  <input type="hidden" id="imageY" name="imageY" value="0">
+                  <input type="hidden" id="imageScale" name="imageScale" value="1">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="username">Имя пользователя *</label>
+                <input type="text" id="username" name="username" value="<%= typeof user !== 'undefined' && user ? user.username : '' %>" required>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" value="<%= typeof user !== 'undefined' && user ? user.email : '' %>" required>
+              </div>
+
+              <div class="form-group">
+                <label for="first_name">Имя</label>
+                <input type="text" id="first_name" name="first_name" value="<%= typeof user !== 'undefined' && user && user.first_name ? user.first_name : '' %>">
+              </div>
+
+              <div class="form-group">
+                <label for="last_name">Фамилия</label>
+                <input type="text" id="last_name" name="last_name" value="<%= typeof user !== 'undefined' && user && user.last_name ? user.last_name : '' %>">
+              </div>
+
+              <div class="form-group">
+                <label for="phone">Телефон</label>
+                <input type="tel" id="phone" name="phone" value="<%= typeof user !== 'undefined' && user && user.phone ? user.phone : '' %>" placeholder="+7 (XXX) XXX-XX-XX">
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <a href="/profile" class="btn btn-secondary">Отмена</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const avatarInput = document.getElementById('avatar');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const avatarPreviewImage = document.getElementById('avatarPreviewImage');
+    const previewWrapper = document.getElementById('previewWrapper');
+    const previewInner = document.getElementById('previewInner');
+    const removePreviewBtn = document.getElementById('removePreview');
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
+    const resetBtn = document.getElementById('resetPosition');
+    const imageDataInput = document.getElementById('imageData');
+    const imageXInput = document.getElementById('imageX');
+    const imageYInput = document.getElementById('imageY');
+    const imageScaleInput = document.getElementById('imageScale');
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let scale = 1;
+    let imageLoaded = false;
+
+    if (avatarInput && avatarPreview && avatarPreviewImage && previewWrapper && previewInner) {
+      // Загрузка изображения
+      avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        
+        if (file) {
+          // Проверка типа файла
+          if (!file.type.startsWith('image/')) {
+            alert('Пожалуйста, выберите изображение (JPG, PNG, GIF, WEBP)');
+            avatarInput.value = '';
+            return;
+          }
+
+          // Проверка размера файла (2MB)
+          if (file.size > 2 * 1024 * 1024) {
+            alert('Размер файла не должен превышать 2MB');
+            avatarInput.value = '';
+            return;
+          }
+
+          // Сброс позиции и масштаба
+          currentX = 0;
+          currentY = 0;
+          scale = 1;
+          updateTransform();
+
+          // Создание предпросмотра
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            avatarPreviewImage.src = e.target.result;
+            imageDataInput.value = e.target.result;
+            avatarPreview.style.display = 'block';
+            
+            // Ждем загрузки изображения
+            avatarPreviewImage.onload = function() {
+              imageLoaded = true;
+              // Автоматически подгоняем масштаб, чтобы изображение заполнило контейнер
+              const containerSize = 150;
+              const imgWidth = this.naturalWidth;
+              const imgHeight = this.naturalHeight;
+              const maxDimension = Math.max(imgWidth, imgHeight);
+              scale = containerSize / maxDimension * 1.2; // Немного больше для возможности перемещения
+              updateTransform();
+            };
+          };
+          reader.readAsDataURL(file);
+        } else {
+          avatarPreview.style.display = 'none';
+        }
+      });
+
+      // Обновление трансформации
+      function updateTransform() {
+        previewInner.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
+        imageXInput.value = currentX;
+        imageYInput.value = currentY;
+        imageScaleInput.value = scale;
+      }
+
+      // Перетаскивание мышью
+      previewInner.addEventListener('mousedown', function(e) {
+        if (!imageLoaded) return;
+        isDragging = true;
+        startX = e.clientX - currentX;
+        startY = e.clientY - currentY;
+        previewInner.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging || !imageLoaded) return;
+        currentX = e.clientX - startX;
+        currentY = e.clientY - startY;
+        updateTransform();
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (isDragging) {
+          isDragging = false;
+          previewInner.style.cursor = 'grab';
+        }
+      });
+
+      // Перетаскивание на touch устройствах
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      previewInner.addEventListener('touchstart', function(e) {
+        if (!imageLoaded) return;
+        isDragging = true;
+        const touch = e.touches[0];
+        touchStartX = touch.clientX - currentX;
+        touchStartY = touch.clientY - currentY;
+        e.preventDefault();
+      });
+
+      previewInner.addEventListener('touchmove', function(e) {
+        if (!isDragging || !imageLoaded) return;
+        const touch = e.touches[0];
+        currentX = touch.clientX - touchStartX;
+        currentY = touch.clientY - touchStartY;
+        updateTransform();
+        e.preventDefault();
+      });
+
+      previewInner.addEventListener('touchend', function() {
+        isDragging = false;
+      });
+
+      // Масштабирование колесиком мыши
+      previewInner.addEventListener('wheel', function(e) {
+        if (!imageLoaded) return;
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        scale = Math.max(0.5, Math.min(3, scale + delta));
+        updateTransform();
+      });
+
+      // Кнопки управления
+      if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', function() {
+          if (!imageLoaded) return;
+          scale = Math.min(3, scale + 0.1);
+          updateTransform();
+        });
+      }
+
+      if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', function() {
+          if (!imageLoaded) return;
+          scale = Math.max(0.5, scale - 0.1);
+          updateTransform();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+          if (!imageLoaded) return;
+          currentX = 0;
+          currentY = 0;
+          scale = 1;
+          if (avatarPreviewImage.complete) {
+            const containerSize = 150;
+            const imgWidth = avatarPreviewImage.naturalWidth;
+            const imgHeight = avatarPreviewImage.naturalHeight;
+            const maxDimension = Math.max(imgWidth, imgHeight);
+            scale = containerSize / maxDimension * 1.2;
+          }
+          updateTransform();
+        });
+      }
+
+      // Удаление предпросмотра
+      if (removePreviewBtn) {
+        removePreviewBtn.addEventListener('click', function() {
+          avatarInput.value = '';
+          avatarPreview.style.display = 'none';
+          avatarPreviewImage.src = '';
+          imageDataInput.value = '';
+          currentX = 0;
+          currentY = 0;
+          scale = 1;
+          imageLoaded = false;
+        });
+      }
+
+      // Установка курсора
+      previewInner.style.cursor = 'grab';
+
+      // Обрезка изображения перед отправкой формы
+      const profileForm = document.getElementById('profileEditForm');
+      if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+          const fileInput = avatarInput;
+          const file = fileInput.files[0];
+          
+          if (file && imageLoaded) {
+            e.preventDefault();
+            
+            // Создаем canvas для обрезки
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const size = 150; // Размер аватара
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Загружаем изображение
+            const img = new Image();
+            img.onload = function() {
+              // Вычисляем параметры обрезки на основе позиции и масштаба
+              const containerSize = 150;
+              const imgWidth = img.width;
+              const imgHeight = img.height;
+              
+              // Вычисляем реальный размер изображения с учетом масштаба
+              const scaledWidth = imgWidth * scale;
+              const scaledHeight = imgHeight * scale;
+              
+              // Вычисляем смещение центра изображения относительно центра контейнера
+              const offsetX = currentX;
+              const offsetY = currentY;
+              
+              // Вычисляем координаты источника для обрезки
+              const sourceX = (containerSize / 2 - offsetX) / scale - containerSize / (2 * scale);
+              const sourceY = (containerSize / 2 - offsetY) / scale - containerSize / (2 * scale);
+              const sourceSize = containerSize / scale;
+              
+              // Ограничиваем координаты в пределах изображения
+              const clampedSourceX = Math.max(0, Math.min(imgWidth - sourceSize, sourceX));
+              const clampedSourceY = Math.max(0, Math.min(imgHeight - sourceSize, sourceY));
+              const clampedSourceSize = Math.min(
+                sourceSize,
+                imgWidth - clampedSourceX,
+                imgHeight - clampedSourceY
+              );
+              
+              // Рисуем обрезанное изображение
+              ctx.drawImage(
+                img,
+                clampedSourceX, clampedSourceY, clampedSourceSize, clampedSourceSize,
+                0, 0, size, size
+              );
+              
+              // Конвертируем в blob и создаем новый файл
+              canvas.toBlob(function(blob) {
+                if (blob) {
+                  const croppedFile = new File([blob], file.name, { type: file.type });
+                  const dataTransfer = new DataTransfer();
+                  dataTransfer.items.add(croppedFile);
+                  fileInput.files = dataTransfer.files;
+                  
+                  // Отправляем форму
+                  profileForm.submit();
+                } else {
+                  // Если не удалось создать blob, отправляем оригинальный файл
+                  profileForm.submit();
+                }
+              }, file.type, 0.95);
+            };
+            
+            img.onerror = function() {
+              // В случае ошибки отправляем оригинальный файл
+              profileForm.submit();
+            };
+            
+            img.src = URL.createObjectURL(file);
+          } else {
+            // Если файл не выбран или изображение не загружено, отправляем форму как обычно
+            profileForm.submit();
+          }
+        });
+      }
+    }
+  });
+</script>

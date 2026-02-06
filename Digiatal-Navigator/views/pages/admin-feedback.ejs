@@ -1,0 +1,232 @@
+<%- include('../partials/header', { title: 'Обратная связь', page: 'admin-feedback' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Обратная связь</h1>
+        <p>Сообщения из формы «Контакты»</p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <% if (typeof query !== 'undefined' && query.success === 'replied') { %>
+          <div class="success-message">
+            <p>✅ Ответ отправлен успешно</p>
+          </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.success === 'deleted') { %>
+          <div class="success-message">
+            <p>✅ Сообщение удалено</p>
+          </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.success === 'updated') { %>
+          <div class="success-message">
+            <p>✅ Статус сообщения обновлен</p>
+          </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.error) { %>
+          <div class="error-message">
+            <p>❌ Ошибка: <%= query.error === 'reply_failed' ? 'Не удалось отправить ответ' : query.error === 'delete_failed' ? 'Не удалось удалить сообщение' : 'Ошибка при обновлении сообщения' %></p>
+          </div>
+        <% } %>
+
+        <div style="margin-bottom: 2rem; text-align: right;">
+          <a href="/admin" class="btn btn-secondary">← Назад в админ-панель</a>
+        </div>
+
+        <div class="events-management-table">
+          <% if (typeof feedback !== 'undefined' && feedback && feedback.length > 0) { %>
+            <table>
+              <thead>
+                <tr>
+                  <th>Дата</th>
+                  <th>Имя</th>
+                  <th>Email</th>
+                  <th>Телефон</th>
+                  <th>Сообщение</th>
+                  <th>Ответов</th>
+                  <th>Статус</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% feedback.forEach(function(item) { %>
+                  <% 
+                    const createdDate = new Date(item.created_at);
+                    const formattedDate = createdDate.toLocaleDateString('ru-RU', { 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+                    const repliesCount = item.replies ? item.replies.length : 0;
+                  %>
+                  <tr data-feedback-id="<%= item.id %>">
+                    <td><strong><%= formattedDate %></strong></td>
+                    <td><%= item.name %></td>
+                    <td><%= item.email %></td>
+                    <td><%= item.phone || '-' %></td>
+                    <td>
+                      <div class="message-preview">
+                        <%= item.message.length > 100 ? item.message.substring(0, 100) + '...' : item.message %>
+                      </div>
+                    </td>
+                    <td>
+                      <% if (repliesCount > 0) { %>
+                        <span class="replies-badge"><%= repliesCount %></span>
+                      <% } else { %>
+                        <span>-</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="feedback-status <%= item.status === 'processed' ? 'status-processed' : 'status-new' %>">
+                        <%= item.status === 'processed' ? 'Обработано' : 'Новое' %>
+                      </span>
+                    </td>
+                    <td>
+                      <div class="dropdown">
+                        <button class="dropdown-toggle btn btn-secondary btn-small" type="button" onclick="toggleDropdown(<%= item.id %>)">
+                          Действия ▼
+                        </button>
+                        <div class="dropdown-menu" id="dropdown-<%= item.id %>">
+                          <button type="button" class="dropdown-item" onclick="showReplyForm(<%= item.id %>, '<%= item.name %>', '<%= item.email %>')">
+                            💬 Ответить
+                          </button>
+                          <% if (item.status !== 'processed') { %>
+                            <form action="/admin/feedback/<%= item.id %>/status" method="POST" style="margin: 0;">
+                              <input type="hidden" name="status" value="processed">
+                              <button type="submit" class="dropdown-item">
+                                ✓ Отметить прочитанным
+                              </button>
+                            </form>
+                          <% } %>
+                          <form action="/admin/feedback/<%= item.id %>/delete" method="POST" style="margin: 0;" onsubmit="return confirm('Вы уверены, что хотите удалить это сообщение?');">
+                            <button type="submit" class="dropdown-item danger">
+                              🗑️ Удалить
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  <!-- Модальное окно для ответа -->
+                  <div class="modal" id="modal-<%= item.id %>" style="display: none;">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h3>Ответить на сообщение</h3>
+                        <button type="button" class="modal-close" onclick="closeModal(<%= item.id %>)">&times;</button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="message-details">
+                          <p><strong>От:</strong> <%= item.name %> (<%= item.email %>)</p>
+                          <p><strong>Сообщение:</strong></p>
+                          <div class="message-text"><%= item.message %></div>
+                        </div>
+                        <% if (item.replies && item.replies.length > 0) { %>
+                          <div class="existing-replies">
+                            <h4>Предыдущие ответы:</h4>
+                            <% item.replies.forEach(function(reply) { %>
+                              <% 
+                                const replyDate = new Date(reply.created_at);
+                                const formattedReplyDate = replyDate.toLocaleDateString('ru-RU', { 
+                                  day: 'numeric', 
+                                  month: 'long', 
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                });
+                              %>
+                              <div class="reply-item">
+                                <div class="reply-header">
+                                  <strong><%= reply.username || 'Администратор' %></strong>
+                                  <span class="reply-date"><%= formattedReplyDate %></span>
+                                </div>
+                                <div class="reply-text">
+                                  <p><%= reply.reply_text %></p>
+                                </div>
+                              </div>
+                            <% }); %>
+                          </div>
+                        <% } %>
+                        <form action="/admin/feedback/<%= item.id %>/reply" method="POST" class="reply-form">
+                          <div class="form-group">
+                            <label for="reply_<%= item.id %>">Ваш ответ:</label>
+                            <textarea 
+                              id="reply_<%= item.id %>" 
+                              name="reply_text" 
+                              rows="5" 
+                              placeholder="Введите ваш ответ..."
+                              required></textarea>
+                          </div>
+                          <div class="modal-actions">
+                            <button type="button" class="btn btn-secondary" onclick="closeModal(<%= item.id %>)">Отмена</button>
+                            <button type="submit" class="btn btn-primary">Отправить ответ</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+              <p>Сообщений пока нет</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function toggleDropdown(id) {
+      const dropdown = document.getElementById('dropdown-' + id);
+      const isOpen = dropdown.style.display === 'block';
+      
+      // Закрыть все другие выпадающие меню
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+      });
+      
+      // Открыть/закрыть текущее меню
+      dropdown.style.display = isOpen ? 'none' : 'block';
+    }
+
+    function showReplyForm(id, name, email) {
+      closeAllDropdowns();
+      const modal = document.getElementById('modal-' + id);
+      modal.style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      const modal = document.getElementById('modal-' + id);
+      modal.style.display = 'none';
+    }
+
+    function closeAllDropdowns() {
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+      });
+    }
+
+    // Закрывать выпадающие меню при клике вне их
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.dropdown')) {
+        closeAllDropdowns();
+      }
+    });
+
+    // Закрывать модальное окно при клике на фон
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    });
+  </script>
+
+<%- include('../partials/footer') %>

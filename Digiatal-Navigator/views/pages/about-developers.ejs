@@ -1,0 +1,50 @@
+<%- include('../partials/header', { title: 'О разработчиках', page: 'about-developers' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>О разработчиках</h1>
+        <p>Информация о команде разработки</p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <div style="max-width: 800px; margin: 0 auto;">
+          <div class="developer-card">
+            <div class="developer-info">
+              <h3>Разработка платформы "Навигатор"</h3>
+              <p>Разработку веб-платформы "Навигатор" для местного отделения Движения Первых осуществляла команда <strong>SpaceZ</strong>.</p>
+              
+              <div class="developer-details">
+                <h4>О SpaceZ</h4>
+                <p>SpaceZ — команда разработчиков, специализирующаяся на создании современных веб-приложений и цифровых решений. Мы создаем интуитивные и функциональные платформы, которые помогают организациям эффективно работать в цифровом пространстве.</p>
+                
+                <h4>Технологии, использованные в проекте</h4>
+                <ul class="tech-list">
+                  <li><strong>Frontend:</strong> HTML5, CSS3, JavaScript</li>
+                  <li><strong>Backend:</strong> Node.js, Express.js</li>
+                  <li><strong>База данных:</strong> SQLite</li>
+                  <li><strong>Шаблонизация:</strong> EJS</li>
+                  <li><strong>Безопасность:</strong> bcrypt, express-session</li>
+                  <li><strong>Файлы:</strong> Multer для загрузки изображений</li>
+                </ul>
+                
+                <h4>Особенности платформы</h4>
+                <ul class="features-list">
+                  <li>Современный адаптивный дизайн</li>
+                  <li>Система авторизации с ролевым доступом</li>
+                  <li>Управление контентом (события, проекты, руководители)</li>
+                  <li>Система обратной связи</li>
+                  <li>Личные кабинеты пользователей</li>
+                  <li>Административная панель</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

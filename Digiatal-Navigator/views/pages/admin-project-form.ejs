@@ -1,0 +1,51 @@
+<%- include('../partials/header', { title: typeof project !== 'undefined' && project ? 'Редактирование проекта' : 'Новый проект', page: 'admin-project-form' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1><%= typeof project !== 'undefined' && project ? 'Редактирование проекта' : 'Новый проект' %></h1>
+        <p><%= typeof project !== 'undefined' && project ? 'Измените информацию о проекте' : 'Добавьте новый местный проект' %></p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <div class="profile-container">
+          <div class="profile-card">
+            <% if (typeof error !== 'undefined' && error) { %>
+              <div class="error-message">
+                <%= error %>
+              </div>
+            <% } %>
+
+            <form action="<%= typeof project !== 'undefined' && project ? '/admin/content/projects/' + project.id : '/admin/content/projects' %>" method="POST" class="profile-edit-form">
+              <div class="form-group">
+                <label for="title">Название проекта *</label>
+                <input type="text" id="title" name="title" value="<%= typeof project !== 'undefined' && project ? project.title : '' %>" required>
+              </div>
+
+              <div class="form-group">
+                <label for="description">Описание *</label>
+                <textarea id="description" name="description" rows="5" required><%= typeof project !== 'undefined' && project && project.description ? project.description : '' %></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="icon">Эмодзи-иконка</label>
+                <input type="text" id="icon" name="icon" value="<%= typeof project !== 'undefined' && project && project.icon ? project.icon : '' %>" placeholder="Например: 🎯">
+                <small>Один эмодзи для отображения иконки проекта</small>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                  <%= typeof project !== 'undefined' && project ? 'Сохранить изменения' : 'Создать проект' %>
+                </button>
+                <a href="/admin/content" class="btn btn-secondary">Отмена</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

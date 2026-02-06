@@ -1,0 +1,177 @@
+<%- include('../partials/header', { title: 'Управление контентом', page: 'admin-content' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Управление контентом</h1>
+        <p>Редактирование событий, руководителей отделения и местных проектов</p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <% if (typeof query !== 'undefined' && query.success) { %>
+          <div class="success-message">
+            <% if (query.success === 'leader_created') { %>
+              <p>✅ Руководитель успешно создан!</p>
+            <% } else if (query.success === 'leader_updated') { %>
+              <p>✅ Руководитель успешно обновлен!</p>
+            <% } else if (query.success === 'leader_deleted') { %>
+              <p>✅ Руководитель успешно удален!</p>
+            <% } else if (query.success === 'project_created') { %>
+              <p>✅ Проект успешно создан!</p>
+            <% } else if (query.success === 'project_updated') { %>
+              <p>✅ Проект успешно обновлен!</p>
+            <% } else if (query.success === 'project_deleted') { %>
+              <p>✅ Проект успешно удален!</p>
+            <% } else if (query.success === 'event_created' || query.success === 'created') { %>
+              <p>✅ Событие успешно создано!</p>
+            <% } else if (query.success === 'event_updated' || query.success === 'updated') { %>
+              <p>✅ Событие успешно обновлено!</p>
+            <% } else if (query.success === 'event_deleted' || query.success === 'deleted') { %>
+              <p>✅ Событие успешно удалено!</p>
+            <% } %>
+          </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.error) { %>
+          <div class="error-message">
+            <p>❌ Ошибка при выполнении операции</p>
+          </div>
+        <% } %>
+
+        <div style="margin-bottom: 2rem; text-align: right;">
+          <a href="/admin" class="btn btn-secondary">← Назад в админ-панель</a>
+        </div>
+
+        <!-- События -->
+        <div class="content-management-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2>Календарь Событий</h2>
+            <a href="/admin/content/events/new" class="btn btn-primary">+ Добавить событие</a>
+          </div>
+
+          <div class="events-management-table">
+            <% if (typeof events !== 'undefined' && events && events.length > 0) { %>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Название</th>
+                    <th>Описание</th>
+                    <th>Место</th>
+                    <th>Действия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% events.forEach(function(event) { %>
+                    <% 
+                      const eventDate = new Date(event.event_date);
+                      const formattedDate = eventDate.toLocaleDateString('ru-RU', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                      });
+                    %>
+                    <tr>
+                      <td><strong><%= formattedDate %></strong></td>
+                      <td><%= event.event_time || '-' %></td>
+                      <td><strong><%= event.title %></strong></td>
+                      <td><%= event.description ? (event.description.length > 50 ? event.description.substring(0, 50) + '...' : event.description) : '-' %></td>
+                      <td><%= event.location || '-' %></td>
+                      <td>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                          <a href="/admin/event-registrations/<%= event.id %>" class="btn btn-secondary btn-small" style="background-color: #17a2b8; border-color: #17a2b8;" title="Просмотреть регистрации">
+                            👥 Регистрации
+                          </a>
+                          <a href="/admin/content/events/<%= event.id %>/edit" class="btn btn-primary btn-small">Редактировать</a>
+                          <form action="/admin/content/events/<%= event.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите удалить это событие?');">
+                            <button type="submit" class="btn btn-secondary btn-small" style="background-color: #dc3545; border-color: #dc3545;">Удалить</button>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            <% } else { %>
+              <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                <p>События пока не добавлены</p>
+                <a href="/admin/content/events/new" class="btn btn-primary" style="margin-top: 1rem;">Добавить первое событие</a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Руководители -->
+        <div class="content-management-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2>Руководители Отделения</h2>
+            <a href="/admin/content/leaders/new" class="btn btn-primary">+ Добавить руководителя</a>
+          </div>
+
+          <div class="leaders-management-grid">
+            <% if (typeof leaders !== 'undefined' && leaders && leaders.length > 0) { %>
+              <% leaders.forEach(function(leader) { %>
+                <div class="leader-management-card">
+                  <div class="leader-avatar-large"><%= leader.avatar || '👤' %></div>
+                  <h3><%= leader.name %></h3>
+                  <p class="leader-role"><%= leader.role %></p>
+                  <% if (leader.bio) { %>
+                    <p class="leader-bio"><%= leader.bio %></p>
+                  <% } %>
+                  <div class="leader-actions">
+                    <a href="/admin/content/leaders/<%= leader.id %>/edit" class="btn btn-primary btn-small">Редактировать</a>
+                    <form action="/admin/content/leaders/<%= leader.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите удалить этого руководителя?');">
+                      <button type="submit" class="btn btn-secondary btn-small" style="background-color: #dc3545; border-color: #dc3545;">Удалить</button>
+                    </form>
+                  </div>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <div style="text-align: center; padding: 2rem; color: var(--text-light); grid-column: 1 / -1;">
+                <p>Руководители пока не добавлены</p>
+                <a href="/admin/content/leaders/new" class="btn btn-primary" style="margin-top: 1rem;">Добавить первого руководителя</a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Проекты -->
+        <div class="content-management-section" style="margin-top: 3rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2>Местные Проекты</h2>
+            <a href="/admin/content/projects/new" class="btn btn-primary">+ Добавить проект</a>
+          </div>
+
+          <div class="projects-management-list">
+            <% if (typeof projects !== 'undefined' && projects && projects.length > 0) { %>
+              <% projects.forEach(function(project) { %>
+                <div class="project-management-card">
+                  <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+                    <div style="flex: 1;">
+                      <h4><%= project.icon ? project.icon + ' ' : '' %><%= project.title %></h4>
+                      <p><%= project.description %></p>
+                    </div>
+                    <div class="project-actions">
+                      <a href="/admin/content/projects/<%= project.id %>/edit" class="btn btn-primary btn-small">Редактировать</a>
+                      <form action="/admin/content/projects/<%= project.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите удалить этот проект?');">
+                        <button type="submit" class="btn btn-secondary btn-small" style="background-color: #dc3545; border-color: #dc3545;">Удалить</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                <p>Проекты пока не добавлены</p>
+                <a href="/admin/content/projects/new" class="btn btn-primary" style="margin-top: 1rem;">Добавить первый проект</a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

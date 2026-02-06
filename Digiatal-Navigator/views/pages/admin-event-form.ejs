@@ -1,0 +1,61 @@
+<%- include('../partials/header', { title: typeof event !== 'undefined' && event ? 'Редактирование события' : 'Новое событие', page: 'admin-event-form' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1><%= typeof event !== 'undefined' && event ? 'Редактирование события' : 'Новое событие' %></h1>
+        <p><%= typeof event !== 'undefined' && event ? 'Измените информацию о событии' : 'Добавьте новое событие в календарь' %></p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <div class="profile-container">
+          <div class="profile-card">
+            <% if (typeof error !== 'undefined' && error) { %>
+              <div class="error-message">
+                <%= error %>
+              </div>
+            <% } %>
+
+            <form action="<%= typeof event !== 'undefined' && event ? '/admin/content/events/' + event.id : '/admin/content/events' %>" method="POST" class="profile-edit-form">
+              <div class="form-group">
+                <label for="title">Название события *</label>
+                <input type="text" id="title" name="title" value="<%= typeof event !== 'undefined' && event ? event.title : '' %>" required>
+              </div>
+
+              <div class="form-group">
+                <label for="description">Описание</label>
+                <textarea id="description" name="description" rows="4"><%= typeof event !== 'undefined' && event && event.description ? event.description : '' %></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="event_date">Дата события *</label>
+                <input type="date" id="event_date" name="event_date" value="<%= typeof event !== 'undefined' && event ? event.event_date : '' %>" required>
+              </div>
+
+              <div class="form-group">
+                <label for="event_time">Время события</label>
+                <input type="text" id="event_time" name="event_time" value="<%= typeof event !== 'undefined' && event && event.event_time ? event.event_time : '' %>" placeholder="Например: 14:00 - 17:00">
+                <small>Формат: 14:00 - 17:00 или просто 14:00</small>
+              </div>
+
+              <div class="form-group">
+                <label for="location">Место проведения</label>
+                <input type="text" id="location" name="location" value="<%= typeof event !== 'undefined' && event && event.location ? event.location : '' %>" placeholder="Например: г. Москва, ул. Примерная, д. 1">
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                  <%= typeof event !== 'undefined' && event ? 'Сохранить изменения' : 'Создать событие' %>
+                </button>
+                <a href="/admin/content" class="btn btn-secondary">Отмена</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

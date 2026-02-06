@@ -1,0 +1,68 @@
+<%- include('../partials/header', { title: 'Регистрация', page: 'register' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Регистрация</h1>
+        <p>Создайте новый аккаунт</p>
+      </div>
+    </section>
+
+    <section class="auth-section">
+      <div class="container">
+        <div class="auth-container">
+          <form action="/register" method="POST" class="auth-form">
+            <% if (typeof error !== 'undefined' && error) { %>
+              <div class="error-message">
+                <%= error %>
+              </div>
+            <% } %>
+
+            <div class="form-group">
+              <label for="username">Имя пользователя *</label>
+              <input type="text" id="username" name="username" required autofocus>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+              <label for="first_name">Имя</label>
+              <input type="text" id="first_name" name="first_name">
+            </div>
+
+            <div class="form-group">
+              <label for="last_name">Фамилия</label>
+              <input type="text" id="last_name" name="last_name">
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Телефон</label>
+              <input type="tel" id="phone" name="phone" placeholder="+7 (XXX) XXX-XX-XX">
+            </div>
+
+            <div class="form-group">
+              <label for="password">Пароль *</label>
+              <input type="password" id="password" name="password" required minlength="6">
+              <small>Минимум 6 символов</small>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">Подтвердите пароль *</label>
+              <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Зарегистрироваться</button>
+          </form>
+
+          <div class="auth-footer">
+            <p>Уже есть аккаунт? <a href="/login">Войти</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

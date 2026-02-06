@@ -1,0 +1,18 @@
+{
+  "watch": [
+    "app.js",
+    "database.js",
+    "views",
+    "public"
+  ],
+  "ext": "js,ejs,css,html",
+  "ignore": [
+    "node_modules",
+    "*.db",
+    "*.log"
+  ],
+  "exec": "node app.js",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}

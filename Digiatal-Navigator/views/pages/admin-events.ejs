@@ -1,0 +1,91 @@
+<%- include('../partials/header', { title: 'Управление событиями', page: 'admin-events' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Управление событиями</h1>
+        <p>Добавление, редактирование и удаление событий в календаре</p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <% if (typeof query !== 'undefined' && query.success === 'created') { %>
+          <div class="success-message">
+            <p>✅ Событие успешно создано!</p>
+          </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.success === 'updated') { %>
+          <div class="success-message">
+            <p>✅ Событие успешно обновлено!</p>
+          </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.success === 'deleted') { %>
+          <div class="success-message">
+            <p>✅ Событие успешно удалено!</p>
+          </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.error === 'delete_failed') { %>
+          <div class="error-message">
+            <p>❌ Ошибка при удалении события</p>
+          </div>
+        <% } %>
+
+        <div style="margin-bottom: 2rem; text-align: right;">
+          <a href="/admin/events/new" class="btn btn-primary">+ Добавить событие</a>
+          <a href="/admin" class="btn btn-secondary">← Назад в админ-панель</a>
+        </div>
+
+        <div class="events-management-table">
+          <% if (typeof events !== 'undefined' && events && events.length > 0) { %>
+            <table>
+              <thead>
+                <tr>
+                  <th>Дата</th>
+                  <th>Время</th>
+                  <th>Название</th>
+                  <th>Описание</th>
+                  <th>Место</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% events.forEach(function(event) { %>
+                  <% 
+                    const eventDate = new Date(event.event_date);
+                    const formattedDate = eventDate.toLocaleDateString('ru-RU', { 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    });
+                  %>
+                  <tr>
+                    <td><strong><%= formattedDate %></strong></td>
+                    <td><%= event.event_time || '-' %></td>
+                    <td><strong><%= event.title %></strong></td>
+                    <td><%= event.description ? (event.description.length > 50 ? event.description.substring(0, 50) + '...' : event.description) : '-' %></td>
+                    <td><%= event.location || '-' %></td>
+                    <td>
+                      <div style="display: flex; gap: 0.5rem;">
+                        <a href="/admin/events/<%= event.id %>/edit" class="btn btn-primary btn-small">Редактировать</a>
+                        <form action="/admin/events/<%= event.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите удалить это событие?');">
+                          <button type="submit" class="btn btn-secondary btn-small" style="background-color: #dc3545; border-color: #dc3545;">Удалить</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+              <p style="font-size: 1.2rem; margin-bottom: 1rem;">События пока не добавлены</p>
+              <a href="/admin/events/new" class="btn btn-primary">Добавить первое событие</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

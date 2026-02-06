@@ -1,0 +1,127 @@
+<%- include('../partials/header', { title: 'Участие', page: 'participation' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Местное Участие</h1>
+        <p>События, проекты и лидеры нашего отделения</p>
+      </div>
+    </section>
+
+    <section class="participation-section">
+      <div class="container">
+        <div class="content-grid">
+          <div class="content-block calendar-block">
+            <h2>Календарь Событий</h2>
+            <% if (typeof user !== 'undefined' && user && user.role === 'superadmin') { %>
+              <div style="margin-bottom: 1rem; text-align: right;">
+                <a href="/admin/content" class="btn btn-primary btn-small">Управление контентом</a>
+              </div>
+            <% } %>
+            <div class="calendar">
+              <% if (typeof events !== 'undefined' && events && events.length > 0) { %>
+                <% events.forEach(function(event) { %>
+                  <% 
+                    const eventDate = new Date(event.event_date);
+                    const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
+                                   'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+                    const day = eventDate.getDate();
+                    const month = months[eventDate.getMonth()];
+                  %>
+                  <div class="event-item">
+                    <div class="event-date">
+                      <span class="event-day"><%= day %></span>
+                      <span class="event-month"><%= month %></span>
+                    </div>
+                    <div class="event-details">
+                      <h4><%= event.title %></h4>
+                      <% if (event.description) { %>
+                        <p><%= event.description %></p>
+                      <% } %>
+                      <% if (event.event_time) { %>
+                        <span class="event-time">⏰ <%= event.event_time %></span>
+                      <% } %>
+                      <% if (event.location) { %>
+                        <span class="event-location">📍 <%= event.location %></span>
+                      <% } %>
+                      <div class="event-registration-info" style="margin-top: 0.5rem;">
+                        <span class="registration-count">👥 Зарегистрировано: <%= event.registrationCount || 0 %></span>
+                      </div>
+                      <% if (typeof user !== 'undefined' && user) { %>
+                        <div class="event-registration-actions" style="margin-top: 0.75rem;">
+                          <% if (event.isRegistered) { %>
+                            <button class="btn btn-secondary btn-small event-unregister-btn" data-event-id="<%= event.id %>" style="background-color: #dc3545; border-color: #dc3545;">
+                              Отменить регистрацию
+                            </button>
+                          <% } else { %>
+                            <button class="btn btn-primary btn-small event-register-btn" data-event-id="<%= event.id %>">
+                              Зарегистрироваться
+                            </button>
+                          <% } %>
+                        </div>
+                      <% } else { %>
+                        <div style="margin-top: 0.75rem;">
+                          <a href="/login" class="btn btn-primary btn-small">Войдите, чтобы зарегистрироваться</a>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                <% }); %>
+              <% } else { %>
+                <p style="text-align: center; color: var(--text-light); padding: 2rem;">
+                  События пока не добавлены
+                </p>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="content-block">
+            <h2>Местные Проекты</h2>
+            <% if (typeof user !== 'undefined' && user && user.role === 'superadmin') { %>
+              <div style="margin-bottom: 1rem; text-align: right;">
+                <a href="/admin/content" class="btn btn-primary btn-small">Управление контентом</a>
+              </div>
+            <% } %>
+            <div class="projects-list">
+              <% if (typeof projects !== 'undefined' && projects && projects.length > 0) { %>
+                <% projects.forEach(function(project) { %>
+                  <div class="project-card">
+                    <h4><%= project.icon ? project.icon + ' ' : '' %><%= project.title %></h4>
+                    <p><%= project.description %></p>
+                  </div>
+                <% }); %>
+              <% } else { %>
+                <p style="text-align: center; color: var(--text-light); padding: 2rem;">
+                  Проекты пока не добавлены
+                </p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <div class="leaders-section">
+          <h2>Руководители Отделения</h2>
+          <div class="leaders-grid">
+            <% if (typeof leaders !== 'undefined' && leaders && leaders.length > 0) { %>
+              <% leaders.forEach(function(leader) { %>
+                <div class="leader-card">
+                  <div class="leader-avatar"><%= leader.avatar || '👤' %></div>
+                  <h3><%= leader.name %></h3>
+                  <p class="leader-role"><%= leader.role %></p>
+                  <% if (leader.bio) { %>
+                    <p class="leader-bio"><%= leader.bio %></p>
+                  <% } %>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <p style="text-align: center; color: var(--text-light); padding: 2rem; grid-column: 1 / -1;">
+                Руководители пока не добавлены
+              </p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

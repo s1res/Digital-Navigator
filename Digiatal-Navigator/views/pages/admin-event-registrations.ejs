@@ -1,0 +1,85 @@
+<%- include('../partials/header', { title: 'Регистрации на мероприятия', page: 'admin-event-registrations' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Регистрации на мероприятия</h1>
+        <p>Просмотр регистраций пользователей на мероприятия</p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <% if (typeof query !== 'undefined' && query.success) { %>
+          <div class="success-message">
+            <p>✅ <%= query.success === 'exported' ? 'Данные успешно экспортированы!' : 'Операция выполнена успешно!' %></p>
+          </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.error) { %>
+          <div class="error-message">
+            <p>❌ Ошибка при выполнении операции</p>
+          </div>
+        <% } %>
+
+        <div style="margin-bottom: 2rem; text-align: right;">
+          <a href="/admin" class="btn btn-secondary">← Назад в админ-панель</a>
+        </div>
+
+        <div class="content-management-section">
+          <h2>Список мероприятий</h2>
+          
+          <% if (typeof events !== 'undefined' && events && events.length > 0) { %>
+            <div class="events-registrations-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Название</th>
+                    <th>Место</th>
+                    <th>Зарегистрировано</th>
+                    <th>Действия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% events.forEach(function(event) { %>
+                    <% 
+                      const eventDate = new Date(event.event_date);
+                      const formattedDate = eventDate.toLocaleDateString('ru-RU', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                      });
+                    %>
+                    <tr>
+                      <td><strong><%= formattedDate %></strong></td>
+                      <td><%= event.event_time || '-' %></td>
+                      <td><strong><%= event.title %></strong></td>
+                      <td><%= event.location || '-' %></td>
+                      <td>
+                        <span class="registration-count-badge" style="display: inline-block; padding: 0.25rem 0.75rem; background-color: var(--primary-color); color: white; border-radius: 12px; font-weight: bold;">
+                          <%= event.registrationCount || 0 %>
+                        </span>
+                      </td>
+                      <td>
+                        <a href="/admin/event-registrations/<%= event.id %>" class="btn btn-primary btn-small">
+                          Просмотреть регистрации
+                        </a>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+              <p>Мероприятия пока не добавлены</p>
+              <a href="/admin/content" class="btn btn-primary" style="margin-top: 1rem;">Управление контентом</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,109 @@
+<%- include('../partials/header', { title: 'Регистрации на мероприятие', page: 'admin-event-registration-details' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Регистрации на мероприятие</h1>
+        <p>Список зарегистрированных пользователей</p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <div style="margin-bottom: 2rem;">
+          <a href="/admin/event-registrations" class="btn btn-secondary">← Назад к списку мероприятий</a>
+        </div>
+
+        <% if (typeof event !== 'undefined' && event) { %>
+          <div class="event-details-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+            <h2 style="margin-top: 0; color: var(--primary-color);"><%= event.title %></h2>
+            <% if (event.description) { %>
+              <p style="color: var(--text-light); margin-bottom: 1rem;"><%= event.description %></p>
+            <% } %>
+            <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.95rem;">
+              <% 
+                const eventDate = new Date(event.event_date);
+                const formattedDate = eventDate.toLocaleDateString('ru-RU', { 
+                  day: 'numeric', 
+                  month: 'long', 
+                  year: 'numeric' 
+                });
+              %>
+              <span><strong>📅 Дата:</strong> <%= formattedDate %></span>
+              <% if (event.event_time) { %>
+                <span><strong>⏰ Время:</strong> <%= event.event_time %></span>
+              <% } %>
+              <% if (event.location) { %>
+                <span><strong>📍 Место:</strong> <%= event.location %></span>
+              <% } %>
+              <span><strong>👥 Зарегистрировано:</strong> <%= registrations.length %> человек</span>
+            </div>
+          </div>
+
+          <div class="registrations-list-section">
+            <h3 style="margin-bottom: 1rem;">Зарегистрированные пользователи</h3>
+            
+            <% if (typeof registrations !== 'undefined' && registrations && registrations.length > 0) { %>
+              <div class="registrations-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Имя пользователя</th>
+                      <th>Email</th>
+                      <th>Имя</th>
+                      <th>Телефон</th>
+                      <th>Дата регистрации</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% registrations.forEach(function(registration) { %>
+                      <tr>
+                        <td><%= registration.user_id %></td>
+                        <td><strong><%= registration.username %></strong></td>
+                        <td><%= registration.email %></td>
+                        <td>
+                          <% if (registration.first_name || registration.last_name) { %>
+                            <%= registration.first_name || '' %> <%= registration.last_name || '' %>
+                          <% } else { %>
+                            -
+                          <% } %>
+                        </td>
+                        <td><%= registration.phone || '-' %></td>
+                        <td>
+                          <%= new Date(registration.created_at).toLocaleDateString('ru-RU', { 
+                            day: 'numeric', 
+                            month: 'long', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) %>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style="margin-top: 1.5rem; padding: 1rem; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+                <p style="margin: 0; color: var(--text-light);">
+                  <strong>Всего зарегистрировано:</strong> <span style="color: var(--primary-color); font-weight: bold; font-size: 1.1em;"><%= registrations.length %></span> человек
+                </p>
+              </div>
+            <% } else { %>
+              <div style="text-align: center; padding: 2rem; color: var(--text-light); background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+                <p style="font-size: 1.1em; margin-bottom: 0.5rem;">На это мероприятие пока никто не зарегистрировался</p>
+                <p style="margin: 0;">Регистрации появятся здесь, когда пользователи зарегистрируются на мероприятие.</p>
+              </div>
+            <% } %>
+          </div>
+        <% } else { %>
+          <div class="error-message">
+            <p>❌ Мероприятие не найдено</p>
+          </div>
+        <% } %>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,117 @@
+<%- include('../partials/header', { title: 'Админ-панель', page: 'admin' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Админ-панель</h1>
+        <p>Управление системой</p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <div class="admin-welcome">
+          <p>Добро пожаловать, <strong><%= typeof user !== 'undefined' && user ? user.username : '' %></strong>!</p>
+          <p class="role-info">Ваша роль: <span class="role-badge role-<%= typeof user !== 'undefined' && user ? user.role : 'admin' %>"><%= typeof user !== 'undefined' && user ? user.role : 'admin' %></span></p>
+        </div>
+
+        <div class="admin-cards">
+          <div class="admin-card">
+            <h3>📊 Статистика</h3>
+            <div class="stat-item">
+              <span class="stat-label">Всего пользователей:</span>
+              <span class="stat-value"><%= typeof stats !== 'undefined' && stats ? stats.total : 0 %></span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Супер-администраторов:</span>
+              <span class="stat-value">
+                <%= typeof stats !== 'undefined' && stats && stats.byRole ? (stats.byRole.superadmin || 0) : 0 %>
+              </span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Администраторов:</span>
+              <span class="stat-value">
+                <%= typeof stats !== 'undefined' && stats && stats.byRole ? (stats.byRole.admin || 0) : 0 %>
+              </span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Обычных пользователей:</span>
+              <span class="stat-value">
+                <%= typeof stats !== 'undefined' && stats && stats.byRole ? (stats.byRole.user || 0) : 0 %>
+              </span>
+            </div>
+          </div>
+
+          <% if (typeof user !== 'undefined' && user && user.role === 'superadmin') { %>
+            <div class="admin-card">
+              <h3>👥 Управление пользователями</h3>
+              <p>Управление пользователями системы, изменение ролей</p>
+              <a href="/admin/users" class="btn btn-primary">Управление пользователями</a>
+            </div>
+            
+            <div class="admin-card">
+              <h3>📝 Управление контентом</h3>
+              <p>Управление событиями, руководителями отделения и местными проектами</p>
+              <a href="/admin/content" class="btn btn-primary">Управление контентом</a>
+            </div>
+          <% } %>
+
+          <div class="admin-card">
+            <h3>📧 Обратная связь</h3>
+            <p>Просмотр сообщений из контактной формы</p>
+            <a href="/admin/feedback" class="btn btn-primary">Открыть</a>
+          </div>
+
+          <div class="admin-card">
+            <h3>📅 Регистрации на мероприятия</h3>
+            <p>Просмотр регистраций пользователей на мероприятия</p>
+            <a href="/admin/event-registrations" class="btn btn-primary">Открыть</a>
+          </div>
+        </div>
+
+        <div class="admin-users-preview">
+          <h2>Список пользователей</h2>
+          <div class="users-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Имя пользователя</th>
+                  <th>Email</th>
+                  <th>Имя</th>
+                  <th>Роль</th>
+                  <th>Дата регистрации</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (typeof users !== 'undefined' && users.length > 0) { %>
+                  <% users.forEach(function(u) { %>
+                    <tr>
+                      <td><%= u.id %></td>
+                      <td><%= u.username %></td>
+                      <td><%= u.email %></td>
+                      <td>
+                        <% if (u.first_name || u.last_name) { %>
+                          <%= u.first_name || '' %> <%= u.last_name || '' %>
+                        <% } else { %>
+                          -
+                        <% } %>
+                      </td>
+                      <td><span class="role-badge role-<%= u.role %>"><%= u.role %></span></td>
+                      <td><%= u.created_at ? new Date(u.created_at).toLocaleDateString('ru-RU') : '-' %></td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="6">Нет пользователей</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

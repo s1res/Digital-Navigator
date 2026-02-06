@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' - ' : '' %>Навигатор</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <h1>Навигатор</h1>
+          <p class="subtitle"></p>
+        </div>
+        <nav class="main-nav">
+          <ul>
+            <li><a href="/" class="<%= typeof page !== 'undefined' && page === 'home' ? 'active' : '' %>">Главная</a></li>
+            <li><a href="/faq" class="<%= typeof page !== 'undefined' && page === 'faq' ? 'active' : '' %>">FAQ</a></li>
+            <li><a href="/opportunities" class="<%= typeof page !== 'undefined' && page === 'opportunities' ? 'active' : '' %>">Возможности</a></li>
+            <li><a href="/participation" class="<%= typeof page !== 'undefined' && page === 'participation' ? 'active' : '' %>">Участие</a></li>
+            <li><a href="/contacts" class="<%= typeof page !== 'undefined' && page === 'contacts' ? 'active' : '' %>">Контакты</a></li>
+            <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+              <li>
+                <a href="/profile" class="<%= typeof page !== 'undefined' && page === 'profile' ? 'active' : '' %>">
+                  <%= typeof user !== 'undefined' && user ? user.username : '' %>
+                  <% if (typeof user !== 'undefined' && user) { %>
+                    <span class="role-badge role-<%= user.role %>"><%= user.role %></span>
+                  <% } %>
+                </a>
+              </li>
+              <% if (typeof user !== 'undefined' && user && (user.role === 'admin' || user.role === 'superadmin')) { %>
+                <li><a href="/admin" class="<%= typeof page !== 'undefined' && page === 'admin' ? 'active' : '' %>">Админ</a></li>
+              <% } %>
+              <li>
+                <form action="/logout" method="POST" class="logout-form">
+                  <button type="submit" class="logout-btn">Выход</button>
+                </form>
+              </li>
+            <% } else { %>
+              <li><a href="/login" class="<%= typeof page !== 'undefined' && page === 'login' ? 'active' : '' %>">Вход</a></li>
+              <li><a href="/register" class="<%= typeof page !== 'undefined' && page === 'register' ? 'active' : '' %>">Регистрация</a></li>
+            <% } %>
+          </ul>
+        </nav>
+        <button class="mobile-menu-toggle" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>

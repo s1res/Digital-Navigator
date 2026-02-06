@@ -1,0 +1,29 @@
+<%- include('../partials/header', { title: 'Ошибка', page: 'error' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Доступ запрещен</h1>
+      </div>
+    </section>
+
+    <section class="error-section">
+      <div class="container">
+        <div class="error-container">
+          <div class="error-icon">🔒</div>
+          <h2>403 - Доступ запрещен</h2>
+          <p><%= typeof message !== 'undefined' ? message : 'У вас нет прав для доступа к этой странице.' %></p>
+          <div class="error-actions">
+            <a href="/" class="btn btn-primary">На главную</a>
+            <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+              <a href="/profile" class="btn btn-secondary">Мой профиль</a>
+            <% } else { %>
+              <a href="/login" class="btn btn-secondary">Войти</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

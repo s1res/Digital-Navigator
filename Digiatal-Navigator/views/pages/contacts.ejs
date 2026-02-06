@@ -1,0 +1,165 @@
+<%- include('../partials/header', { title: 'Контакты', page: 'contacts' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Контакты</h1>
+        <p>Свяжитесь с нами любым удобным способом</p>
+      </div>
+    </section>
+
+    <section class="contacts-section">
+      <div class="container">
+        <% if (typeof query !== 'undefined' && query.success === 'true') { %>
+        <div class="success-message">
+          <p>✅ Спасибо! Ваше сообщение отправлено. Мы свяжемся с вами в ближайшее время.</p>
+        </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.error === 'true') { %>
+        <div class="error-message">
+          <p>❌ Не удалось отправить сообщение. Попробуйте позже.</p>
+        </div>
+        <% } %>
+
+        <div class="contacts-grid">
+          <div class="contact-info">
+            <h2>Координатор Отделения</h2>
+            <div class="coordinator-card">
+              <div class="coordinator-avatar">👨‍💼</div>
+              <h3>Бакуркин Матвей Максимович</h3>
+              <div class="contact-details">
+                <p><strong>📧 Email:</strong> matveybakurkin@gmail.com</p>
+                <p><strong>📞 Телефон:</strong> +7 (953) 456-60-31</p>
+                <p><strong>🕐 Рабочие часы:</strong> Пн-Пт, 10:00 - 18:00</p>
+              </div>
+            </div>
+
+            <div class="social-links">
+              <h3>Мы в социальных сетях</h3>
+              <div class="social-icons">
+                <a href="#" class="social-icon" aria-label="VKontakte">VK</a>
+                <a href="#" class="social-icon" aria-label="Telegram">TG</a>
+                <a href="#" class="social-icon" aria-label="YouTube">YT</a>
+                <a href="#" class="social-icon" aria-label="OK">OK</a>
+              </div>
+            </div>
+
+            <div class="office-info">
+              <h3>Адрес офиса</h3>
+              <p>📍 г. Оренбург, Лицей №8, ул. Терешковой, д. 14</p>
+              <p>Офис находится в центре города, рядом с остановкой общественного транспорта.</p>
+            </div>
+          </div>
+
+          <div class="contact-form-wrapper">
+            <h2>Свяжитесь с нами</h2>
+            <form action="/contacts" method="POST" class="contact-form">
+              <div class="form-group">
+                <label for="name">Имя *</label>
+                <input type="text" id="name" name="name" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="phone">Телефон</label>
+                <input type="tel" id="phone" name="phone" placeholder="+7 (XXX) XXX-XX-XX">
+              </div>
+              
+              <div class="form-group">
+                <label for="message">Сообщение *</label>
+                <textarea id="message" name="message" rows="5" required></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-primary">Отправить сообщение</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="map-section">
+          <h2>Как нас найти</h2>
+          <div class="map-container">
+            <div id="yandex-map" style="width: 100%; height: 400px; border-radius: 12px; overflow: hidden;"></div>
+            <p class="map-address">📍 г. Оренбург, Лицей №8, ул. Терешковой, д. 14</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>
+
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+<script>
+  ymaps.ready(function () {
+    // Инициализация карты с примерными координатами Оренбурга
+    var myMap = new ymaps.Map('yandex-map', {
+      center: [51.7682, 55.0969], // Координаты Оренбурга
+      zoom: 16,
+      controls: ['zoomControl', 'fullscreenControl', 'typeSelector']
+    });
+
+    // Поиск точного адреса
+    ymaps.geocode('г. Оренбург, Лицей №8, ул. Терешковой, 14', {
+      results: 1
+    }).then(function (res) {
+      var firstGeoObject = res.geoObjects.get(0);
+      if (firstGeoObject) {
+        var coords = firstGeoObject.geometry.getCoordinates();
+        
+        // Обновляем центр карты
+        myMap.setCenter(coords, 17);
+        
+        // Добавляем метку
+        var myPlacemark = new ymaps.Placemark(coords, {
+          balloonContentHeader: 'Навигатор',
+          balloonContentBody: 'г. Оренбург, Лицей №8, ул. Терешковой, д. 14',
+          balloonContentFooter: 'Местное отделение Движения Первых',
+          hintContent: 'Навигатор'
+        }, {
+          preset: 'islands#blueDotIcon',
+          iconColor: '#1E50A0'
+        });
+        
+        myMap.geoObjects.add(myPlacemark);
+        
+        // Открываем балун при клике
+        myPlacemark.events.add('click', function () {
+          myPlacemark.balloon.open();
+        });
+      } else {
+        // Если геокодирование не удалось, используем примерные координаты
+        var defaultCoords = [51.7682, 55.0969];
+        var myPlacemark = new ymaps.Placemark(defaultCoords, {
+          balloonContentHeader: 'Навигатор',
+          balloonContentBody: 'г. Оренбург, Лицей №8, ул. Терешковой, д. 14',
+          balloonContentFooter: 'Местное отделение Движения Первых',
+          hintContent: 'Навигатор'
+        }, {
+          preset: 'islands#blueDotIcon',
+          iconColor: '#1E50A0'
+        });
+        
+        myMap.geoObjects.add(myPlacemark);
+      }
+    }).catch(function (error) {
+      // В случае ошибки используем координаты по умолчанию
+      console.log('Ошибка геокодирования:', error);
+      var defaultCoords = [51.7682, 55.0969];
+      var myPlacemark = new ymaps.Placemark(defaultCoords, {
+        balloonContentHeader: 'Навигатор',
+        balloonContentBody: 'г. Оренбург, Лицей №8, ул. Терешковой, д. 14',
+        balloonContentFooter: 'Местное отделение Движения Первых',
+        hintContent: 'Навигатор'
+      }, {
+        preset: 'islands#blueDotIcon',
+        iconColor: '#1E50A0'
+      });
+      
+      myMap.geoObjects.add(myPlacemark);
+    });
+  });
+</script>

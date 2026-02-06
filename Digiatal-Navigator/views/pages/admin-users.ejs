@@ -1,0 +1,78 @@
+<%- include('../partials/header', { title: 'Управление пользователями', page: 'admin-users' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Управление пользователями</h1>
+        <p>Изменение ролей пользователей (только для супер-администраторов)</p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="container">
+        <div class="admin-warning">
+          <p>⚠️ Внимание: Изменение ролей может повлиять на доступ пользователей к системе.</p>
+        </div>
+
+        <div class="users-management-table">
+          <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Имя пользователя</th>
+                  <th>Email</th>
+                  <th>Имя</th>
+                  <th>Текущая роль</th>
+                  <th>Изменить роль</th>
+                  <th>Действие</th>
+                </tr>
+              </thead>
+            <tbody>
+              <% if (typeof users !== 'undefined' && users.length > 0) { %>
+                <% users.forEach(function(u) { %>
+                  <tr>
+                    <td><%= u.id %></td>
+                    <td><%= u.username %></td>
+                    <td><%= u.email %></td>
+                    <td>
+                      <% if (u.first_name || u.last_name) { %>
+                        <%= u.first_name || '' %> <%= u.last_name || '' %>
+                      <% } else { %>
+                        -
+                      <% } %>
+                    </td>
+                    <td><span class="role-badge role-<%= u.role %>"><%= u.role %></span></td>
+                    <td>
+                      <form action="/admin/users/<%= u.id %>/role" method="POST" class="role-change-form">
+                        <select name="role" class="role-select">
+                          <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>user</option>
+                          <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>admin</option>
+                          <option value="superadmin" <%= u.role === 'superadmin' ? 'selected' : '' %>>superadmin</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-small">Изменить</button>
+                      </form>
+                    </td>
+                    <td>
+                      <% if (typeof user !== 'undefined' && user && user.id === u.id) { %>
+                        <span class="current-user">Вы</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="7">Нет пользователей</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="admin-back">
+          <a href="/admin" class="btn btn-secondary">← Назад в админ-панель</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>

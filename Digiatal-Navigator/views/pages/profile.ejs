@@ -1,0 +1,155 @@
+<%- include('../partials/header', { title: 'Профиль', page: 'profile' }) %>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Личный кабинет</h1>
+        <p>Информация о вашем аккаунте</p>
+      </div>
+    </section>
+
+    <section class="profile-section">
+      <div class="container">
+        <div class="profile-container">
+          <div class="profile-card">
+            <div class="profile-header">
+              <div class="profile-avatar">
+                <% if (typeof user !== 'undefined' && user && user.avatar_path) { %>
+                  <img src="<%= user.avatar_path %>" alt="Avatar" class="profile-avatar-image">
+                <% } else { %>
+                  <%= typeof user !== 'undefined' && user ? user.username.charAt(0).toUpperCase() : 'U' %>
+                <% } %>
+              </div>
+              <h2><%= typeof user !== 'undefined' && user ? user.username : '' %></h2>
+              <span class="role-badge-large role-<%= typeof user !== 'undefined' && user ? user.role : 'user' %>">
+                <%= typeof user !== 'undefined' && user ? user.role : 'user' %>
+              </span>
+            </div>
+
+            <% if (typeof query !== 'undefined' && query.success === 'updated') { %>
+              <div class="success-message">
+                <p>✅ Профиль успешно обновлен!</p>
+              </div>
+            <% } %>
+
+            <div class="profile-info">
+              <div class="info-item">
+                <label>Имя пользователя:</label>
+                <span><%= typeof user !== 'undefined' && user ? user.username : '' %></span>
+              </div>
+
+              <div class="info-item">
+                <label>Email:</label>
+                <span><%= typeof user !== 'undefined' && user ? user.email : '' %></span>
+              </div>
+
+              <% if (typeof user !== 'undefined' && user && (user.first_name || user.last_name)) { %>
+                <div class="info-item">
+                  <label>Имя:</label>
+                  <span><%= user.first_name || '' %> <%= user.last_name || '' %></span>
+                </div>
+              <% } %>
+
+              <% if (typeof user !== 'undefined' && user && user.phone) { %>
+                <div class="info-item">
+                  <label>Телефон:</label>
+                  <span><%= user.phone %></span>
+                </div>
+              <% } %>
+              
+              <div class="info-item">
+                <label>ID пользователя:</label>
+                <span><%= typeof user !== 'undefined' && user ? user.id : '' %></span>
+              </div>
+
+              <div class="info-item">
+                <label>Роль:</label>
+                <span class="role-name"><%= typeof user !== 'undefined' && user ? user.role : 'user' %></span>
+                <% if (typeof user !== 'undefined' && user && user.role === 'superadmin') { %>
+                  <p class="role-description">Супер-администратор - полный доступ ко всем функциям системы</p>
+                <% } else if (typeof user !== 'undefined' && user && user.role === 'admin') { %>
+                  <p class="role-description">Администратор - доступ к административной панели</p>
+                <% } else { %>
+                  <p class="role-description">Пользователь - базовый доступ к сайту</p>
+                <% } %>
+              </div>
+
+              <% if (typeof user !== 'undefined' && user && user.created_at) { %>
+                <div class="info-item">
+                  <label>Дата регистрации:</label>
+                  <span><%= new Date(user.created_at).toLocaleDateString('ru-RU') %></span>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Зарегистрированные мероприятия -->
+            <% if (typeof registrations !== 'undefined' && registrations && registrations.length > 0) { %>
+              <div class="profile-registrations" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                <h3 style="margin-bottom: 1rem;">Мои регистрации на мероприятия</h3>
+                <div class="registrations-list">
+                  <% registrations.forEach(function(registration) { %>
+                    <% 
+                      const eventDate = new Date(registration.event_date);
+                      const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
+                                     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+                      const day = eventDate.getDate();
+                      const month = months[eventDate.getMonth()];
+                      const year = eventDate.getFullYear();
+                      const formattedDate = eventDate.toLocaleDateString('ru-RU', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                      });
+                    %>
+                    <div class="registration-item" style="background: var(--card-bg); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                      <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem;">
+                        <div style="flex: 1;">
+                          <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-color);"><%= registration.title %></h4>
+                          <% if (registration.description) { %>
+                            <p style="margin: 0 0 0.5rem 0; color: var(--text-light);"><%= registration.description %></p>
+                          <% } %>
+                          <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.9rem; color: var(--text-light);">
+                            <span>📅 <%= formattedDate %></span>
+                            <% if (registration.event_time) { %>
+                              <span>⏰ <%= registration.event_time %></span>
+                            <% } %>
+                            <% if (registration.location) { %>
+                              <span>📍 <%= registration.location %></span>
+                            <% } %>
+                          </div>
+                        </div>
+                        <div>
+                          <a href="/participation" class="btn btn-secondary btn-small">Подробнее</a>
+                        </div>
+                      </div>
+                    </div>
+                  <% }); %>
+                </div>
+              </div>
+            <% } else if (typeof registrations !== 'undefined') { %>
+              <div class="profile-registrations" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                <h3 style="margin-bottom: 1rem;">Мои регистрации на мероприятия</h3>
+                <p style="color: var(--text-light); margin-bottom: 1rem;">Вы еще не зарегистрированы ни на одно мероприятие.</p>
+                <div style="text-align: center;">
+                  <a href="/participation" class="btn btn-primary">Посмотреть мероприятия</a>
+                </div>
+              </div>
+            <% } %>
+
+            <div class="profile-actions">
+              <a href="/profile/edit" class="btn btn-primary">Редактировать профиль</a>
+              <a href="/profile/password" class="btn btn-secondary">Изменить пароль</a>
+              <% if (typeof user !== 'undefined' && user && (user.role === 'admin' || user.role === 'superadmin')) { %>
+                <a href="/admin" class="btn btn-secondary">Админ-панель</a>
+              <% } %>
+              <form action="/logout" method="POST" class="logout-form-inline">
+                <button type="submit" class="btn btn-secondary">Выйти</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<%- include('../partials/footer') %>
